@@ -5,36 +5,9 @@ import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Coins, Gift, LogOut, PackageOpen, Star, ClipboardPaste } from "lucide-react";
 import { pb } from "../lib/pocketbase";
+import { products, type Product } from "../lib/products";
 
 type RedeemResponse = { message: string; coins: number } | { error: string };
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-};
-
-const products: Product[] = [
-  {
-    id: "digital-item-a",
-    name: "Digital Item A",
-    price: 2,
-    description: "Unlocks a clean cosmetic boost for your collection.",
-  },
-  {
-    id: "digital-item-b",
-    name: "Digital Item B",
-    price: 4,
-    description: "Premium themed item with a stronger visual impact.",
-  },
-  {
-    id: "digital-item-c",
-    name: "Digital Item C",
-    price: 6,
-    description: "High-tier digital reward for dedicated players.",
-  },
-];
 
 function toastClass(type: "success" | "error") {
   return [
@@ -64,7 +37,48 @@ export default function HomePageClient() {
       return;
     }
 
-    setIsCheckingAuth(false);
+    let isMounted = true;
+
+    async function loadCoinBalance() {
+      const userId = pb.authStore.model?.id;
+
+      if (!userId) {
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
+
+        return;
+      }
+
+      try {
+        const user = await pb.collection("users").getOne(userId);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCoinBalance(typeof user.coins === "number" ? user.coins : 0);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setToast({
+          type: "error",
+          message: "Could not load your coin balance.",
+        });
+      } finally {
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
+      }
+    }
+
+    void loadCoinBalance();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   useEffect(() => {

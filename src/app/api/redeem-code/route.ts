@@ -9,20 +9,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { code } = (await request.json()) as {
-      code?: string;
-    };
+    const body = (await request.json()) as { code?: string };
+    const code = typeof body.code === "string" ? body.code.trim() : "";
 
-    if (!code || typeof code !== "string") {
+    if (!code) {
       return NextResponse.json(
         { error: "Invalid or already used code" },
         { status: 400 },
       );
     }
 
-    const rewardCode = await pb
-      .collection("reward_codes")
-      .getFirstListItem(`code = "${code}"`);
+    let rewardCode;
+    try {
+      rewardCode = await pb
+        .collection("reward_codes")
+        .getFirstListItem(`code = "${code}"`);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid or already used code" },
+        { status: 400 },
+      );
+    }
 
     if (!rewardCode || rewardCode.is_used) {
       return NextResponse.json(
@@ -30,10 +37,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    await pb.collection("reward_codes").update(rewardCode.id, {
-      is_used: true,
-    });
 
     const userId = pb.authStore.model?.id;
 
@@ -46,6 +49,10 @@ export async function POST(request: Request) {
     const currentCoins = typeof user.coins === "number" ? user.coins : 0;
     const newCoinBalance = currentCoins + 1;
 
+    await pb.collection("reward_codes").update(rewardCode.id, {
+      is_used: true,
+    });
+
     await pb.collection("users").update(user.id, {
       coins: newCoinBalance,
     });
@@ -56,8 +63,8 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Invalid or already used code" },
-      { status: 400 },
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
