@@ -40,7 +40,7 @@ export default function RegisterPage() {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password || !passwordConfirm) {
-      setErrorMessage("Complete all fields to create your account.");
+      setErrorMessage("Please complete all fields to create your account.");
       return;
     }
 
@@ -67,7 +67,9 @@ export default function RegisterPage() {
       router.replace("/");
     } catch (error) {
       console.error("RegisterPage handleSubmit error:", error);
-      setErrorMessage("Could not create account. Try a different email.");
+      setErrorMessage(
+        "We couldn’t create your account. Please try a different email.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -85,9 +87,14 @@ export default function RegisterPage() {
           <h1 className="mt-5 text-3xl font-semibold text-white">
             Create your account
           </h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Register to start redeeming codes and tracking your coins.
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Register to claim reward links, collect coins, and keep your balance in sync.
           </p>
+
+          <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-xs leading-5 text-slate-300">
+            <Sparkles className="h-4 w-4 shrink-0 text-violet-300" />
+            You’ll need an account before reward links can be claimed.
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">

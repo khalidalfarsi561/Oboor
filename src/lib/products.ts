@@ -8,20 +8,23 @@ export type Product = {
 export const products: Product[] = [
   {
     id: "digital-item-a",
-    name: "Digital Item A",
+    name: "Neon Badge",
     price: 2,
-    description: "Unlocks a clean cosmetic boost for your collection.",
+    description:
+      "A lightweight cosmetic preview item with a polished visual accent.",
   },
   {
     id: "digital-item-b",
-    name: "Digital Item B",
+    name: "Pulse Frame",
     price: 4,
-    description: "Premium themed item with a stronger visual impact.",
+    description:
+      "A richer preview reward with a brighter themed finish for future unlocks.",
   },
   {
     id: "digital-item-c",
-    name: "Digital Item C",
+    name: "Vault Pass",
     price: 6,
-    description: "High-tier digital reward for dedicated players.",
+    description:
+      "A higher-tier placeholder reward that hints at upcoming premium items.",
   },
 ];

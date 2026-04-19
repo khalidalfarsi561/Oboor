@@ -1,18 +1,11 @@
-import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { getSsrPb, runPocketBaseTransaction } from "../../../lib/pocketbase";
 
-function generateRewardCode(length = 8): string {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const bytes = randomBytes(length);
-  let result = "";
-
-  for (let i = 0; i < length; i += 1) {
-    result += characters[bytes[i] % characters.length];
-  }
-
-  return result;
-}
+type AccessTokenRecord = {
+  id: string;
+  is_used?: boolean;
+  expires?: string | null;
+};
 
 function getPocketBaseStatus(error: unknown) {
   if (typeof error !== "object" || error === null || !("status" in error)) {
@@ -32,30 +25,16 @@ function getErrorMessage(error: unknown) {
   return typeof message === "string" ? message.toLowerCase() : "";
 }
 
-function isUniqueConstraintError(error: unknown) {
-  const status = getPocketBaseStatus(error);
-  const message = getErrorMessage(error);
-
-  return (
-    status === 400 &&
-    (message.includes("unique") ||
-      message.includes("already exists") ||
-      message.includes("duplicate"))
-  );
-}
-
-function isLikelyTokenUnavailableError(error: unknown) {
+function isPocketBaseUnavailableError(error: unknown) {
   const status = getPocketBaseStatus(error);
   const message = getErrorMessage(error);
 
   return (
     status === 404 ||
-    (status === 400 &&
-      (message.includes("not found") ||
-        message.includes("doesn't exist") ||
-        message.includes("already used") ||
-        message.includes("invalid") ||
-        message.includes("validation")))
+    status === 400 ||
+    message.includes("not found") ||
+    message.includes("doesn't exist") ||
+    message.includes("validation")
   );
 }
 
@@ -72,19 +51,23 @@ function isExpired(expires: string | null | undefined) {
   return Date.now() > expiresAt;
 }
 
-type AccessTokenRecord = {
-  id: string;
-  is_used?: boolean;
-  expires?: string | null;
-};
-
-function invalidTokenResponse() {
-  return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+function invalidLinkResponse() {
+  return NextResponse.json(
+    { error: "This reward link is invalid." },
+    { status: 400 },
+  );
 }
 
-function invalidOrExpiredTokenResponse() {
+function expiredLinkResponse() {
   return NextResponse.json(
-    { error: "Invalid or expired token" },
+    { error: "This reward link has expired." },
+    { status: 400 },
+  );
+}
+
+function alreadyClaimedResponse() {
+  return NextResponse.json(
+    { error: "This reward was already claimed." },
     { status: 400 },
   );
 }
@@ -94,22 +77,27 @@ export async function POST(request: Request) {
     const pb = getSsrPb(request);
 
     if (!pb.authStore.isValid) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Please sign in to continue." },
+        { status: 401 },
+      );
     }
 
     const body = (await request.json().catch(() => null)) as {
       token?: string;
     } | null;
-    const token = typeof body?.token === "string" ? body.token.trim() : "";
 
+    const token = typeof body?.token === "string" ? body.token.trim() : "";
     if (!token) {
-      return invalidTokenResponse();
+      return invalidLinkResponse();
     }
 
     const userId = pb.authStore.record?.id ?? pb.authStore.model?.id;
-
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Please sign in to continue." },
+        { status: 401 },
+      );
     }
 
     const tokenRecord = (await pb
@@ -119,12 +107,10 @@ export async function POST(request: Request) {
           token,
           userId,
         }),
-        {
-          requestKey: null,
-        },
+        { requestKey: null },
       )
       .catch((error: unknown) => {
-        if (isLikelyTokenUnavailableError(error)) {
+        if (isPocketBaseUnavailableError(error)) {
           return null;
         }
 
@@ -132,74 +118,84 @@ export async function POST(request: Request) {
       })) as AccessTokenRecord | null;
 
     if (!tokenRecord) {
-      return invalidOrExpiredTokenResponse();
+      return invalidLinkResponse();
     }
 
     if (tokenRecord.is_used) {
-      return invalidOrExpiredTokenResponse();
+      return alreadyClaimedResponse();
     }
 
     if (isExpired(tokenRecord.expires)) {
-      return NextResponse.json({ error: "Token expired" }, { status: 400 });
+      return expiredLinkResponse();
     }
 
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const code = generateRewardCode(8);
-
-      try {
-        const createdCode = await runPocketBaseTransaction(
-          pb,
-          async (transactionPb) => {
-            await transactionPb.collection("reward_codes").create({
-              code,
-              is_used: false,
-            });
-
-            try {
-              await transactionPb.collection("access_tokens").update(
-                tokenRecord.id,
-                {
-                  is_used: true,
-                },
-              );
-            } catch (error: unknown) {
-              if (isLikelyTokenUnavailableError(error)) {
-                throw new Error("TOKEN_UNAVAILABLE");
-              }
-
-              throw error;
+    try {
+      await runPocketBaseTransaction(pb, async (transactionPb) => {
+        const currentToken = (await transactionPb
+          .collection("access_tokens")
+          .getOne(tokenRecord.id, { requestKey: null })
+          .catch((error: unknown) => {
+            if (isPocketBaseUnavailableError(error)) {
+              return null;
             }
 
-            return code;
-          },
-        );
+            throw error;
+          })) as AccessTokenRecord | null;
 
-        return NextResponse.json({ code: createdCode });
-      } catch (error: unknown) {
-        if (isUniqueConstraintError(error)) {
-          continue;
+        if (!currentToken) {
+          throw new Error("TOKEN_MISSING");
         }
 
-        if (
-          error instanceof Error &&
-          error.message === "TOKEN_UNAVAILABLE"
-        ) {
-          return invalidOrExpiredTokenResponse();
+        if (currentToken.is_used) {
+          throw new Error("TOKEN_ALREADY_USED");
         }
 
-        if (isLikelyTokenUnavailableError(error)) {
-          return invalidOrExpiredTokenResponse();
+        if (isExpired(currentToken.expires)) {
+          throw new Error("TOKEN_EXPIRED");
         }
 
-        throw error;
+        await transactionPb.collection("access_tokens").update(tokenRecord.id, {
+          is_used: true,
+        });
+
+        await transactionPb.collection("users").update(userId, {
+          "coins+": 1,
+        });
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "TOKEN_MISSING") {
+          return invalidLinkResponse();
+        }
+
+        if (error.message === "TOKEN_ALREADY_USED") {
+          return alreadyClaimedResponse();
+        }
+
+        if (error.message === "TOKEN_EXPIRED") {
+          return expiredLinkResponse();
+        }
       }
+
+      if (isPocketBaseUnavailableError(error)) {
+        return invalidLinkResponse();
+      }
+
+      throw error;
     }
 
-    throw new Error("Unable to generate a unique reward code");
+    const updatedUser = await pb.collection("users").getOne(userId, {
+      requestKey: null,
+    });
+
+    return NextResponse.json({
+      message: "Reward claimed successfully",
+      coins: typeof updatedUser.coins === "number" ? updatedUser.coins : 0,
+    });
   } catch (error: unknown) {
     console.error("verify-token error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Something went wrong while claiming the reward." },
       { status: 500 },
     );
   }

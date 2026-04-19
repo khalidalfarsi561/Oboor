@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
-      setErrorMessage("Enter your email and password.");
+      setErrorMessage("Please enter your email and password.");
       return;
     }
 
@@ -39,7 +39,9 @@ export default function LoginPage() {
       router.replace("/");
     } catch (error) {
       console.error("LoginPage handleSubmit error:", error);
-      setErrorMessage("Invalid email or password.");
+      setErrorMessage(
+        "We couldn’t sign you in. Please check your email and password.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -57,9 +59,14 @@ export default function LoginPage() {
           <h1 className="mt-5 text-3xl font-semibold text-white">
             Sign in to continue
           </h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Access your reward balance and redeem codes securely.
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Access your balance, claim reward links, and keep your coins in sync.
           </p>
+
+          <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-xs leading-5 text-slate-300">
+            <Sparkles className="h-4 w-4 shrink-0 text-cyan-300" />
+            You need to sign in to claim reward links.
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">

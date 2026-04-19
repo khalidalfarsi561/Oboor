@@ -24,6 +24,7 @@ function AuthGateSkeleton() {
             <div className="h-10 w-full rounded-2xl bg-white/5" />
             <div className="h-10 w-5/6 rounded-2xl bg-white/5" />
             <div className="h-12 w-full rounded-2xl bg-white/5" />
+            <div className="h-12 w-3/4 rounded-2xl bg-white/5" />
           </div>
         </div>
       </div>
@@ -57,16 +58,14 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     }
 
     const isPublicRoute = publicRoutes.has(pathname);
+    const isAuthPage = pathname === "/login" || pathname === "/register";
 
-    if (!pb.authStore.isValid && !isPublicRoute && pathname !== "/login") {
+    if (!pb.authStore.isValid && !isPublicRoute) {
       router.replace("/login");
       return;
     }
 
-    if (
-      pb.authStore.isValid &&
-      (pathname === "/login" || pathname === "/register")
-    ) {
+    if (pb.authStore.isValid && isAuthPage) {
       router.replace("/");
     }
   }, [authVersion, isHydrated, pathname, router]);

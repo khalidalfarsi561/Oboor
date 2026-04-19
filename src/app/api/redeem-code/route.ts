@@ -11,7 +11,7 @@ type RewardCodeRecord = {
 
 class RedeemCodeUnavailableError extends Error {
   constructor() {
-    super("Invalid or already used code");
+    super("This code is invalid or already used.");
     this.name = "RedeemCodeUnavailableError";
   }
 }
@@ -25,12 +25,6 @@ function getPocketBaseStatus(error: unknown) {
   return typeof status === "number" ? status : null;
 }
 
-function isRedeemCodeUnavailableError(error: unknown) {
-  const status = getPocketBaseStatus(error);
-
-  return status === 400 || status === 404 || status === 409;
-}
-
 function getErrorMessage(error: unknown) {
   if (typeof error !== "object" || error === null || !("message" in error)) {
     return "";
@@ -38,6 +32,12 @@ function getErrorMessage(error: unknown) {
 
   const message = (error as { message?: unknown }).message;
   return typeof message === "string" ? message.toLowerCase() : "";
+}
+
+function isRedeemCodeUnavailableError(error: unknown) {
+  const status = getPocketBaseStatus(error);
+
+  return status === 400 || status === 404 || status === 409;
 }
 
 function isLikelyPocketBaseRecordUnavailableError(error: unknown) {
@@ -58,8 +58,15 @@ function isLikelyPocketBaseRecordUnavailableError(error: unknown) {
 
 function toInvalidOrAlreadyUsedResponse() {
   return NextResponse.json(
-    { error: "Invalid or already used code" },
+    { error: "This code is invalid or already used." },
     { status: 400 },
+  );
+}
+
+function unauthorizedResponse() {
+  return NextResponse.json(
+    { error: "Please sign in to continue." },
+    { status: 401 },
   );
 }
 
@@ -68,7 +75,7 @@ export async function POST(request: Request) {
     const pb = getSsrPb(request);
 
     if (!pb.authStore.isValid) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const body = await request.json().catch(() => null);
@@ -76,12 +83,15 @@ export async function POST(request: Request) {
       typeof body?.code === "string" ? body.code.trim().toUpperCase() : "";
 
     if (!CODE_REGEX.test(code)) {
-      return NextResponse.json({ error: "Invalid code format" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Please enter a valid reward code." },
+        { status: 400 },
+      );
     }
 
     const userId = pb.authStore.record?.id ?? pb.authStore.model?.id;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const rewardCode = (await pb
@@ -152,13 +162,13 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      message: "Code redeemed successfully",
+      message: "Reward redeemed successfully",
       coins: typeof updatedUser.coins === "number" ? updatedUser.coins : 0,
     });
   } catch (error: unknown) {
     console.error("redeem-code error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Something went wrong while redeeming the code." },
       { status: 500 },
     );
   }

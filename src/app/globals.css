@@ -14,10 +14,10 @@
   body {
     @apply min-h-screen overflow-x-hidden bg-slate-950 text-slate-50 antialiased;
     background:
-      radial-gradient(circle at 12% 18%, rgba(34, 211, 238, 0.18), transparent 0 28%),
-      radial-gradient(circle at 88% 12%, rgba(168, 85, 247, 0.16), transparent 0 24%),
-      radial-gradient(circle at 50% 95%, rgba(14, 165, 233, 0.12), transparent 0 30%),
-      linear-gradient(180deg, #020617 0%, #020617 48%, #0f172a 100%);
+      radial-gradient(circle at 12% 18%, rgba(34, 211, 238, 0.14), transparent 0 26%),
+      radial-gradient(circle at 88% 12%, rgba(168, 85, 247, 0.12), transparent 0 22%),
+      radial-gradient(circle at 50% 95%, rgba(14, 165, 233, 0.08), transparent 0 28%),
+      linear-gradient(180deg, #020617 0%, #020617 52%, #0f172a 100%);
     background-attachment: fixed;
   }
 
@@ -45,6 +45,14 @@
   .smooth-transition {
     @apply transition-all duration-300 ease-in-out;
   }
+
+  .card-surface {
+    @apply rounded-3xl border border-white/10 bg-slate-950/70 shadow-glow backdrop-blur;
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold text-white;
+  }
 }
 
 @layer utilities {
@@ -54,6 +62,10 @@
 
   .animate-fade-in-up {
     animation: fade-in-up 0.45s ease-out both;
+  }
+
+  .soft-ring {
+    @apply ring-1 ring-white/5;
   }
 }
 

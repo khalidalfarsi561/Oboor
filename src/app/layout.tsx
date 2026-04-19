@@ -4,8 +4,12 @@ import AuthGate from "../components/AuthGate";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Rewards Store",
-  description: "PocketBase rewards redemption store",
+  title: {
+    default: "Neon Rewards Store",
+    template: "%s | Neon Rewards Store",
+  },
+  description:
+    "Claim reward links, track your coin balance, and browse preview rewards in PocketBase.",
 };
 
 export default function RootLayout({
