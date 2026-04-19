@@ -18,7 +18,7 @@ type RedeemResponse = { message: string; coins: number } | { error: string };
 
 function toastClass(type: "success" | "error") {
   return [
-    "rounded-2xl border px-4 py-3 text-sm shadow-glow backdrop-blur",
+    "rounded-2xl border px-4 py-3 text-sm shadow-glow backdrop-blur-md smooth-transition",
     type === "success"
       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
       : "border-rose-500/30 bg-rose-500/10 text-rose-100",
@@ -219,9 +219,9 @@ export default function HomePageClient() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
+    <main className="min-h-screen px-4 py-4 text-slate-100 sm:px-6 sm:py-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-glow backdrop-blur">
+        <header className="sticky top-4 z-40 rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-glow backdrop-blur-md smooth-transition sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-cyan-200/80">
@@ -251,7 +251,7 @@ export default function HomePageClient() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-rose-400/40 hover:bg-rose-400/10"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white smooth-transition hover:border-rose-400/40 hover:bg-rose-400/10"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -261,7 +261,9 @@ export default function HomePageClient() {
         </header>
 
         {toast ? (
-          <div className={toastClass(toast.type)}>{toast.message}</div>
+          <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 sm:left-auto sm:right-6 sm:w-auto sm:max-w-sm sm:translate-x-0">
+            <div className={toastClass(toast.type)}>{toast.message}</div>
+          </div>
         ) : null}
 
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -277,33 +279,37 @@ export default function HomePageClient() {
             </div>
 
             <form onSubmit={handleRedeem} className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  value={code}
-                  onChange={(event) => setCode(event.target.value)}
-                  placeholder="Enter reward code"
-                  className="min-h-14 flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 text-base text-white outline-none ring-0 transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <button
-                  type="button"
-                  onClick={handlePaste}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-cyan-400/50 hover:bg-cyan-400/10"
-                >
-                  <ClipboardPaste className="h-4 w-4" />
-                  Paste
-                </button>
-              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-3 smooth-transition focus-within:ring-2 focus-within:ring-cyan-500/50">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                  <input
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    placeholder="Enter reward code"
+                    className="min-h-14 w-full flex-1 rounded-2xl border border-white/10 bg-slate-950/40 px-4 text-base text-white outline-none ring-0 smooth-transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <div className="grid grid-cols-2 gap-3 lg:flex lg:shrink-0">
+                    <button
+                      type="button"
+                      onClick={handlePaste}
+                      className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white smooth-transition hover:border-cyan-400/50 hover:bg-cyan-400/10"
+                    >
+                      <ClipboardPaste className="h-4 w-4" />
+                      Paste
+                    </button>
 
-              <button
-                type="submit"
-                disabled={isRedeeming}
-                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <PackageOpen className="h-4 w-4" />
-                {isRedeeming ? "Redeeming..." : "Redeem"}
-              </button>
+                    <button
+                      type="submit"
+                      disabled={isRedeeming}
+                      className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white smooth-transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <PackageOpen className="h-4 w-4" />
+                      {isRedeeming ? "Redeeming..." : "Redeem"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </form>
           </div>
 
@@ -318,11 +324,11 @@ export default function HomePageClient() {
               </h2>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => (
                 <article
                   key={product.id}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-5 transition hover:border-cyan-400/30 hover:bg-white/7"
+                  className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-glow smooth-transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.07] hover:shadow-cyan-500/10"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -346,7 +352,7 @@ export default function HomePageClient() {
                   <button
                     type="button"
                     onClick={() => handleBuy(product)}
-                    className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white opacity-70 transition hover:border-violet-400/40 hover:bg-violet-400/10"
+                    className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white opacity-70 smooth-transition hover:border-violet-400/40 hover:bg-violet-400/10"
                   >
                     <Star className="h-4 w-4" />
                     Demo Only

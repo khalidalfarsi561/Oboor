@@ -15,10 +15,17 @@ function AuthGateSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="min-h-screen w-full animate-pulse bg-slate-950/0"
+      className="min-h-screen w-full bg-slate-950 text-slate-50"
     >
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4">
-        <div className="h-6 w-40 rounded-full bg-white/5" />
+      <div className="flex min-h-screen w-full items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/80 p-8 shadow-glow backdrop-blur">
+          <div className="space-y-4">
+            <div className="h-4 w-32 rounded-full bg-white/5" />
+            <div className="h-10 w-full rounded-2xl bg-white/5" />
+            <div className="h-10 w-5/6 rounded-2xl bg-white/5" />
+            <div className="h-12 w-full rounded-2xl bg-white/5" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -65,14 +72,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }, [authVersion, isHydrated, pathname, router]);
 
   if (!isHydrated) {
-    return (
-      <div className="pointer-events-none">
-        <div className="invisible">{children}</div>
-        <div className="absolute inset-0">
-          <AuthGateSkeleton />
-        </div>
-      </div>
-    );
+    return <AuthGateSkeleton />;
   }
 
   return <>{children}</>;

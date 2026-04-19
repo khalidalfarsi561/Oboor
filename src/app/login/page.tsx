@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
+import { ArrowRight, Shield, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { pb, syncBrowserAuthCookie } from "../../lib/pocketbase";
 
@@ -45,13 +46,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
-      <section className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/80 p-8 shadow-glow backdrop-blur">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100 sm:px-6">
+      <section className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/80 px-6 py-8 shadow-glow backdrop-blur smooth-transition sm:px-8">
         <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">
-            Neon Rewards
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold text-white">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-cyan-200/80">
+            <Shield className="h-4 w-4" />
+            Secure Login
+          </div>
+
+          <h1 className="mt-5 text-3xl font-semibold text-white">
             Sign in to continue
           </h1>
           <p className="mt-2 text-sm text-slate-300">
@@ -70,10 +73,13 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              inputMode="email"
               autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
+              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none smooth-transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
               placeholder="you@example.com"
             />
           </div>
@@ -91,7 +97,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
+              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none smooth-transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
               placeholder="Enter your password"
             />
           </div>
@@ -105,9 +111,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="min-h-14 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white shadow-glow smooth-transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
+            <ArrowRight className="h-4 w-4" />
           </button>
         </form>
 
@@ -115,7 +122,7 @@ export default function LoginPage() {
           New here?{" "}
           <Link
             href="/register"
-            className="text-cyan-300 transition hover:text-cyan-200"
+            className="text-cyan-300 smooth-transition hover:text-cyan-200"
           >
             Create an account
           </Link>

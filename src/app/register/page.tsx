@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
+import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { pb, syncBrowserAuthCookie } from "../../lib/pocketbase";
 
@@ -73,13 +74,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
-      <section className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/80 p-8 shadow-glow backdrop-blur">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100 sm:px-6">
+      <section className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/80 px-6 py-8 shadow-glow backdrop-blur smooth-transition sm:px-8">
         <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-violet-300/80">
-            Neon Rewards
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold text-white">
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-violet-200/80">
+            <ShieldCheck className="h-4 w-4" />
+            Create Account
+          </div>
+
+          <h1 className="mt-5 text-3xl font-semibold text-white">
             Create your account
           </h1>
           <p className="mt-2 text-sm text-slate-300">
@@ -98,10 +101,13 @@ export default function RegisterPage() {
             <input
               id="email"
               type="email"
+              inputMode="email"
               autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
+              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none smooth-transition placeholder:text-slate-400 focus:border-cyan-400/60 focus:bg-white/10"
               placeholder="you@example.com"
             />
           </div>
@@ -119,7 +125,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
+              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none smooth-transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
               placeholder="Create a password"
             />
           </div>
@@ -137,7 +143,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
               value={passwordConfirm}
               onChange={(event) => setPasswordConfirm(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
+              className="min-h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-4 text-white outline-none smooth-transition placeholder:text-slate-400 focus:border-violet-400/60 focus:bg-white/10"
               placeholder="Confirm your password"
             />
           </div>
@@ -151,9 +157,10 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="min-h-14 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white shadow-glow smooth-transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Creating account..." : "Create account"}
+            <ArrowRight className="h-4 w-4" />
           </button>
         </form>
 
@@ -161,7 +168,7 @@ export default function RegisterPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-cyan-300 transition hover:text-cyan-200"
+            className="text-cyan-300 smooth-transition hover:text-cyan-200"
           >
             Sign in
           </Link>

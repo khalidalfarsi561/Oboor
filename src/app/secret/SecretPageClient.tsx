@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BadgeCheck, Copy, ShieldAlert, Sparkles } from "lucide-react";
+import {
+  BadgeCheck,
+  Copy,
+  ShieldAlert,
+  Sparkles,
+  ArrowLeft,
+} from "lucide-react";
 
 function Spinner() {
   return (
@@ -98,11 +104,13 @@ export default function SecretPageClient() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4 text-slate-100">
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-slate-950/80 px-8 py-10 shadow-glow backdrop-blur">
-          <Spinner />
-          <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80">
-            Verifying access
-          </p>
+        <div className="flex min-h-screen w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-slate-950/80 px-8 py-10 shadow-glow backdrop-blur">
+            <Spinner />
+            <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80">
+              Verifying access
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -110,30 +118,39 @@ export default function SecretPageClient() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="max-w-md rounded-3xl border border-rose-500/30 bg-rose-500/10 px-8 py-10 text-center shadow-glow">
+      <main className="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100">
+        <section className="w-full max-w-md rounded-3xl border border-rose-500/30 bg-rose-500/10 px-6 py-8 text-center shadow-glow backdrop-blur smooth-transition sm:px-8">
           <ShieldAlert className="mx-auto h-12 w-12 text-rose-200" />
           <h1 className="mt-4 text-2xl font-semibold text-rose-100">
             Unauthorized or Expired Link
           </h1>
-          <p className="mt-2 text-sm text-rose-100/80">
+          <p className="mt-2 text-sm leading-6 text-rose-100/80">
             The reward access link is invalid or has expired.
           </p>
-        </div>
+
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="mt-6 inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white smooth-transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to store
+          </button>
+        </section>
       </main>
     );
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100">
-      <section className="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/80 p-8 text-center shadow-glow backdrop-blur">
+      <section className="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/80 p-6 text-center shadow-glow backdrop-blur smooth-transition sm:p-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-cyan-200/80">
           <Sparkles className="h-4 w-4" />
           Reward Code Generated
         </div>
 
-        <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 px-6 py-8">
-          <p className="break-all font-mono text-4xl font-bold tracking-[0.25em] text-white sm:text-5xl">
+        <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-6 sm:px-6 sm:py-8">
+          <p className="animate-fade-in-up break-all font-mono text-2xl font-bold tracking-[0.18em] text-white sm:text-3xl md:text-4xl lg:text-5xl">
             {rewardCode}
           </p>
         </div>
@@ -142,7 +159,7 @@ export default function SecretPageClient() {
           type="button"
           onClick={handleCopyCode}
           disabled={isCopied}
-          className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white shadow-glow smooth-transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
         >
           <Copy className="h-4 w-4" />
           {isCopied ? "Copied!" : "Copy Code"}
@@ -164,12 +181,12 @@ export default function SecretPageClient() {
           </p>
         )}
 
-        <p className="mt-3 text-sm text-slate-300">
+        <p className="mt-3 text-sm leading-6 text-slate-300">
           سيتم تحويلك إلى الصفحة الرئيسية خلال 5 ثوانٍ بعد النسخ الناجح، أو{" "}
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="font-medium text-cyan-300 transition hover:text-cyan-200"
+            className="font-medium text-cyan-300 smooth-transition hover:text-cyan-200"
           >
             اضغط هنا للعودة الآن
           </button>

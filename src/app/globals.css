@@ -12,11 +12,13 @@
   }
 
   body {
-    @apply min-h-screen bg-slate-950 text-slate-50 antialiased;
+    @apply min-h-screen overflow-x-hidden bg-slate-950 text-slate-50 antialiased;
     background:
-      radial-gradient(circle at top, rgba(34, 211, 238, 0.14), transparent 28%),
-      radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.16), transparent 24%),
-      linear-gradient(180deg, #020617 0%, #020617 45%, #0f172a 100%);
+      radial-gradient(circle at 12% 18%, rgba(34, 211, 238, 0.18), transparent 0 28%),
+      radial-gradient(circle at 88% 12%, rgba(168, 85, 247, 0.16), transparent 0 24%),
+      radial-gradient(circle at 50% 95%, rgba(14, 165, 233, 0.12), transparent 0 30%),
+      linear-gradient(180deg, #020617 0%, #020617 48%, #0f172a 100%);
+    background-attachment: fixed;
   }
 
   * {
@@ -39,8 +41,30 @@
   }
 }
 
+@layer components {
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.45s ease-out both;
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
