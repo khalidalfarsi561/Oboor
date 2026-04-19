@@ -36,7 +36,7 @@ export default function HomePageClient() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
 
   useEffect(() => {
     if (!pb.authStore.isValid) {
@@ -51,7 +51,7 @@ export default function HomePageClient() {
 
       if (!userId) {
         if (isMounted) {
-          setIsCheckingAuth(false);
+          router.replace("/login");
         }
 
         return;
@@ -76,7 +76,7 @@ export default function HomePageClient() {
         });
       } finally {
         if (isMounted) {
-          setIsCheckingAuth(false);
+          setIsLoadingBalance(false);
         }
       }
     }
@@ -112,9 +112,8 @@ export default function HomePageClient() {
   }, [toast]);
 
   const sessionLabel = useMemo(() => {
-    if (isCheckingAuth) return "Loading session...";
     return pb.authStore.isValid ? "Logged in" : "Guest mode";
-  }, [isCheckingAuth]);
+  }, []);
 
   async function handleLogout() {
     pb.authStore.clear();
@@ -205,18 +204,6 @@ export default function HomePageClient() {
     });
   }
 
-  if (isCheckingAuth) {
-    return (
-      <main className="flex min-h-screen items-center justify-center px-4 text-slate-100">
-        <div className="rounded-3xl border border-white/10 bg-slate-950/80 px-8 py-10 shadow-glow backdrop-blur">
-          <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80">
-            Checking session
-          </p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -243,7 +230,7 @@ export default function HomePageClient() {
                   Coin Balance
                 </p>
                 <p className="mt-1 text-3xl font-bold text-white">
-                  {coinBalance}
+                  {isLoadingBalance ? "..." : coinBalance}
                 </p>
               </div>
 

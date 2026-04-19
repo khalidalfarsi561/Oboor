@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSsrPb } from "../../../lib/pocketbase";
+import { getSsrPb, runPocketBaseTransaction } from "../../../lib/pocketbase";
 
 export async function POST(request: Request) {
   try {
@@ -19,17 +19,15 @@ export async function POST(request: Request) {
       );
     }
 
-    let rewardCode;
-    try {
-      rewardCode = await pb
-        .collection("reward_codes")
-        .getFirstListItem(`code = "${code}"`);
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid or already used code" },
-        { status: 400 },
-      );
+    const userId = pb.authStore.model?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rewardCode = await pb
+      .collection("reward_codes")
+      .getFirstListItem(`code = "${code}"`);
 
     if (!rewardCode || rewardCode.is_used) {
       return NextResponse.json(
@@ -38,42 +36,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const userId = pb.authStore.model?.id;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await pb.collection("users").getOne(userId);
-    const currentCoins = typeof user.coins === "number" ? user.coins : 0;
-    const newCoinBalance = currentCoins + 1;
-
-    try {
-      await pb.collection("reward_codes").update(rewardCode.id, {
+    const updatedUser = await runPocketBaseTransaction(pb, async (transactionPb) => {
+      await transactionPb.collection("reward_codes").update(rewardCode.id, {
         is_used: true,
       });
 
-      await pb.collection("users").update(user.id, {
-        coins: newCoinBalance,
+      return transactionPb.collection("users").update(userId, {
+        "coins+": 1,
       });
-    } catch {
-      try {
-        await pb.collection("reward_codes").update(rewardCode.id, {
-          is_used: false,
-        });
-      } catch {
-        // Best effort rollback only.
-      }
-
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
+    });
 
     return NextResponse.json({
       message: "Code redeemed successfully",
-      coins: newCoinBalance,
+      coins: typeof updatedUser.coins === "number" ? updatedUser.coins : 0,
     });
   } catch {
     return NextResponse.json(

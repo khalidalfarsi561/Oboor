@@ -19,8 +19,11 @@ export default function SecretPageClient() {
   const [error, setError] = useState(false);
   const [rewardCode, setRewardCode] = useState("");
   const [copyError, setCopyError] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof window.setTimeout> | undefined;
+
     async function verifyToken() {
       if (!token) {
         setError(true);
@@ -56,15 +59,25 @@ export default function SecretPageClient() {
     }
 
     verifyToken();
+
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, [token]);
 
   async function handleCopyCode() {
-    if (!rewardCode) return;
+    if (!rewardCode || isCopied) return;
 
     try {
       await navigator.clipboard.writeText(rewardCode);
       setCopyError("");
-      router.push("/?copied=true");
+      setIsCopied(true);
+
+      window.setTimeout(() => {
+        router.push("/?copied=true");
+      }, 1500);
     } catch {
       setCopyError("Failed to copy the code. Please copy it manually.");
     }
@@ -116,15 +129,21 @@ export default function SecretPageClient() {
         <button
           type="button"
           onClick={handleCopyCode}
-          className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white transition hover:brightness-110"
+          disabled={isCopied}
+          className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
         >
           <Copy className="h-4 w-4" />
-          Copy Code
+          {isCopied ? "Copied!" : "Copy Code"}
         </button>
 
         {copyError ? (
           <p className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
             {copyError}
+          </p>
+        ) : isCopied ? (
+          <p className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-300">
+            <BadgeCheck className="h-4 w-4" />
+            Code copied. Redirecting to the store...
           </p>
         ) : (
           <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-300">
