@@ -11,21 +11,31 @@ export const pb = new PocketBase(pbUrl);
 type TransactionCallback<T> = (transactionPb: PocketBase) => Promise<T>;
 
 type TransactionCapablePocketBase = PocketBase & {
-  createTransaction?: <T>(
-    callback: TransactionCallback<T>,
-  ) => Promise<T>;
+  createTransaction?: <T>(callback: TransactionCallback<T>) => Promise<T>;
   transaction?: <T>(callback: TransactionCallback<T>) => Promise<T>;
 };
 
+type BatchCapablePocketBase = PocketBase & {
+  createBatch?: () => unknown;
+  send?: () => Promise<unknown>;
+};
+
+function getAuthCookieOptions(isServer: boolean) {
+  return {
+    httpOnly: isServer,
+    path: "/",
+    secure: true,
+  };
+}
+
 export function syncBrowserAuthCookie() {
-  if (typeof document === "undefined") {
-    return;
+  const isServer = typeof document === "undefined";
+
+  if (isServer) {
+    return pb.authStore.exportToCookie(getAuthCookieOptions(true));
   }
 
-  document.cookie = pb.authStore.exportToCookie({
-    httpOnly: false,
-    path: "/",
-  });
+  document.cookie = pb.authStore.exportToCookie(getAuthCookieOptions(false));
 }
 
 export function loadBrowserAuthCookie() {
@@ -56,7 +66,8 @@ export async function runPocketBaseTransaction<T>(
   client: PocketBase,
   callback: TransactionCallback<T>,
 ): Promise<T> {
-  const transactionClient = client as TransactionCapablePocketBase;
+  const transactionClient = client as TransactionCapablePocketBase &
+    BatchCapablePocketBase;
 
   if (typeof transactionClient.createTransaction === "function") {
     return transactionClient.createTransaction(callback);
@@ -66,5 +77,23 @@ export async function runPocketBaseTransaction<T>(
     return transactionClient.transaction(callback);
   }
 
-  return callback(client);
+  if (typeof transactionClient.createBatch === "function") {
+    const batchClient =
+      transactionClient.createBatch() as unknown as PocketBase;
+    const result = await callback(batchClient);
+
+    if (typeof transactionClient.send === "function") {
+      await transactionClient.send();
+    }
+
+    return result;
+  }
+
+  const result = await callback(client);
+
+  if (typeof transactionClient.send === "function") {
+    await transactionClient.send();
+  }
+
+  return result;
 }

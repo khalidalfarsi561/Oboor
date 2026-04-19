@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { code?: string };
     const code = typeof body.code === "string" ? body.code.trim() : "";
 
-    if (!code) {
+    if (code.length < 5) {
       return NextResponse.json(
         { error: "Invalid or already used code" },
         { status: 400 },
@@ -36,15 +36,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const updatedUser = await runPocketBaseTransaction(pb, async (transactionPb) => {
-      await transactionPb.collection("reward_codes").update(rewardCode.id, {
-        is_used: true,
-      });
+    const updatedUser = await runPocketBaseTransaction(
+      pb,
+      async (transactionPb) => {
+        await transactionPb.collection("reward_codes").update(rewardCode.id, {
+          is_used: true,
+        });
 
-      return transactionPb.collection("users").update(userId, {
-        "coins+": 1,
-      });
-    });
+        return transactionPb.collection("users").update(userId, {
+          "coins+": 1,
+        });
+      },
+    );
 
     return NextResponse.json({
       message: "Code redeemed successfully",

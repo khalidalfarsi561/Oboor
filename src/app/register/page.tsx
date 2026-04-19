@@ -6,6 +6,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { pb, syncBrowserAuthCookie } from "../../lib/pocketbase";
 
+function generateUsernameFromEmail(email: string) {
+  const emailPrefix = email.split("@")[0] ?? "";
+  const slug = emailPrefix
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const fallback = `user-${Math.random().toString(36).slice(2, 8)}`;
+  const baseUsername = slug || fallback;
+
+  return baseUsername.length >= 3 ? baseUsername.slice(0, 20) : fallback;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -35,12 +48,15 @@ export default function RegisterPage() {
       return;
     }
 
+    const username = generateUsernameFromEmail(trimmedEmail);
+
     setIsSubmitting(true);
     setErrorMessage("");
 
     try {
       await pb.collection("users").create({
         email: trimmedEmail,
+        username,
         password,
         passwordConfirm,
       });

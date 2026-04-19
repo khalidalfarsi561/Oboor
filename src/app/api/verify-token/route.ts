@@ -1,9 +1,6 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
-import {
-  getSsrPb,
-  runPocketBaseTransaction,
-} from "../../../lib/pocketbase";
+import { getSsrPb, runPocketBaseTransaction } from "../../../lib/pocketbase";
 
 function generateRewardCode(length = 8): string {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -24,6 +21,19 @@ function isUniqueConstraintError(error: unknown) {
     "status" in error &&
     (error as { status?: number }).status === 400
   );
+}
+
+function isExpired(expires: string | null | undefined) {
+  if (!expires) {
+    return false;
+  }
+
+  const expiresAt = new Date(expires).getTime();
+  if (Number.isNaN(expiresAt)) {
+    return false;
+  }
+
+  return Date.now() > expiresAt;
 }
 
 async function createUniqueRewardCode(pb: ReturnType<typeof getSsrPb>) {
@@ -69,11 +79,22 @@ export async function POST(request: Request) {
       .collection("access_tokens")
       .getFirstListItem(`token = "${token}"`);
 
-    if (!tokenRecord || tokenRecord.is_used) {
+    if (!tokenRecord) {
       return NextResponse.json(
         { error: "Invalid or expired token" },
         { status: 400 },
       );
+    }
+
+    if (tokenRecord.is_used) {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 400 },
+      );
+    }
+
+    if (isExpired(tokenRecord.expires)) {
+      return NextResponse.json({ error: "Token expired" }, { status: 400 });
     }
 
     const code = await runPocketBaseTransaction(pb, async (transactionPb) => {

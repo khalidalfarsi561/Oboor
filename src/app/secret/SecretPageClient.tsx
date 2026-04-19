@@ -67,7 +67,7 @@ export default function SecretPageClient() {
     };
   }, [token]);
 
-  async function handleCopyCode() {
+    async function handleCopyCode() {
     if (!rewardCode || isCopied) return;
 
     try {
@@ -76,8 +76,8 @@ export default function SecretPageClient() {
       setIsCopied(true);
 
       window.setTimeout(() => {
-        router.push("/?copied=true");
-      }, 1500);
+        router.push("/");
+      }, 5000);
     } catch {
       setCopyError("Failed to copy the code. Please copy it manually.");
     }
@@ -151,6 +151,17 @@ export default function SecretPageClient() {
             Paste the code back into the store to claim your coins.
           </p>
         )}
+
+        <p className="mt-3 text-sm text-slate-300">
+          سيتم تحويلك إلى الصفحة الرئيسية خلال 5 ثوانٍ، أو{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="font-medium text-cyan-300 transition hover:text-cyan-200"
+          >
+            اضغط هنا للعودة الآن
+          </button>
+        </p>
       </section>
     </main>
   );
