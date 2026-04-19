@@ -10,9 +10,10 @@ export async function POST(request: Request) {
     }
 
     const body = (await request.json()) as { code?: string };
-    const code = typeof body.code === "string" ? body.code.trim() : "";
+    const code =
+      typeof body.code === "string" ? body.code.trim().toUpperCase() : "";
 
-    if (code.length !== 8) {
+    if (!/^[A-Z0-9]{8}$/.test(code)) {
       return NextResponse.json(
         { error: "Invalid or already used code" },
         { status: 400 },
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 
     const rewardCode = await pb
       .collection("reward_codes")
-      .getFirstListItem(`code = "${code}"`);
+      .getFirstListItem(pb.filter("code = {:code}", { code }));
 
     if (!rewardCode || rewardCode.is_used) {
       return NextResponse.json(
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
           is_used: true,
         });
 
+        // PocketBase API rules: keep the coins field read-only for clients.
+        // Only server-side code should mutate it via atomic operators.
         return transactionPb.collection("users").update(userId, {
           "coins+": 1,
         });

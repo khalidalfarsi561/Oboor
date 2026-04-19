@@ -11,6 +11,19 @@ import {
 
 const publicRoutes = new Set(["/login", "/register", "/secret"]);
 
+function AuthGateSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="min-h-screen w-full animate-pulse bg-slate-950/0"
+    >
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4">
+        <div className="h-6 w-40 rounded-full bg-white/5" />
+      </div>
+    </div>
+  );
+}
+
 export default function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +65,14 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }, [authVersion, isHydrated, pathname, router]);
 
   if (!isHydrated) {
-    return null;
+    return (
+      <div className="pointer-events-none">
+        <div className="invisible">{children}</div>
+        <div className="absolute inset-0">
+          <AuthGateSkeleton />
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

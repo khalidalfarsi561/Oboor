@@ -58,7 +58,9 @@ export default function HomePageClient() {
       }
 
       try {
-        const user = await pb.collection("users").getOne(userId);
+        const user = await pb.collection("users").getOne(userId, {
+          requestKey: null,
+        });
 
         if (!isMounted) {
           return;
@@ -66,6 +68,15 @@ export default function HomePageClient() {
 
         setCoinBalance(typeof user.coins === "number" ? user.coins : 0);
       } catch (error) {
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "isAbort" in error &&
+          (error as { isAbort?: boolean }).isAbort
+        ) {
+          return;
+        }
+
         console.error("HomePageClient loadCoinBalance error:", error);
         if (!isMounted) {
           return;

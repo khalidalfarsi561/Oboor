@@ -36,26 +36,11 @@ function isExpired(expires: string | null | undefined) {
   return Date.now() > expiresAt;
 }
 
-async function createUniqueRewardCode(pb: ReturnType<typeof getSsrPb>) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const code = generateRewardCode(8);
-
-    try {
-      await pb.collection("reward_codes").create({
-        code,
-        is_used: false,
-      });
-
-      return code;
-    } catch (error) {
-      if (!isUniqueConstraintError(error)) {
-        throw error;
-      }
-    }
-  }
-
-  throw new Error("Unable to generate a unique reward code");
-}
+type AccessTokenRecord = {
+  id: string;
+  is_used?: boolean;
+  expires?: string | null;
+};
 
 export async function POST(request: Request) {
   try {
@@ -81,20 +66,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let tokenRecord: {
-      id: string;
-      is_used?: boolean;
-      expires?: string | null;
-    };
+    let tokenRecord: AccessTokenRecord;
 
     try {
-      tokenRecord = await pb
+      tokenRecord = (await pb
         .collection("access_tokens")
-        .getFirstListItem(`token = "${token}" && user_id = "${userId}"`) as {
-          id: string;
-          is_used?: boolean;
-          expires?: string | null;
-        };
+        .getFirstListItem(
+          pb.filter("token = {:token} && user_id = {:userId}", {
+            token,
+            userId,
+          }),
+        )) as AccessTokenRecord;
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -122,17 +104,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Token expired" }, { status: 400 });
     }
 
-    const code = await runPocketBaseTransaction(pb, async (transactionPb) => {
-      const createdCode = await createUniqueRewardCode(transactionPb);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const code = generateRewardCode(8);
 
-      await transactionPb.collection("access_tokens").update(tokenRecord.id, {
-        is_used: true,
-      });
+      try {
+        const createdCode = await runPocketBaseTransaction(
+          pb,
+          async (transactionPb) => {
+            await transactionPb.collection("reward_codes").create({
+              code,
+              is_used: false,
+            });
 
-      return createdCode;
-    });
+            await transactionPb.collection("access_tokens").update(
+              tokenRecord.id,
+              {
+                is_used: true,
+              },
+            );
 
-    return NextResponse.json({ code });
+            return code;
+          },
+        );
+
+        return NextResponse.json({ code: createdCode });
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new Error("Unable to generate a unique reward code");
   } catch (error) {
     console.error("verify-token error:", error);
     return NextResponse.json(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BadgeCheck, Copy, ShieldAlert, Sparkles } from "lucide-react";
 
@@ -20,9 +20,25 @@ export default function SecretPageClient() {
   const [rewardCode, setRewardCode] = useState("");
   const [copyError, setCopyError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const hasVerifiedToken = useRef(false);
+  const redirectTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof window.setTimeout> | undefined;
+    return () => {
+      if (redirectTimeoutRef.current) {
+        globalThis.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasVerifiedToken.current) {
+      return;
+    }
+
+    hasVerifiedToken.current = true;
 
     async function verifyToken() {
       if (!token) {
@@ -60,12 +76,6 @@ export default function SecretPageClient() {
     }
 
     verifyToken();
-
-    return () => {
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
-    };
   }, [token]);
 
   async function handleCopyCode() {
@@ -76,8 +86,8 @@ export default function SecretPageClient() {
       setCopyError("");
       setIsCopied(true);
 
-      window.setTimeout(() => {
-        router.push("/?copied=true");
+      redirectTimeoutRef.current = globalThis.setTimeout(() => {
+        router.push("/");
       }, 5000);
     } catch (error) {
       console.error("SecretPageClient handleCopyCode error:", error);
@@ -145,17 +155,17 @@ export default function SecretPageClient() {
         ) : isCopied ? (
           <p className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-300">
             <BadgeCheck className="h-4 w-4" />
-            Code copied. Redirecting to the store...
+            Code copied. It is now active in your account. Redirecting to the store...
           </p>
         ) : (
           <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-300">
             <BadgeCheck className="h-4 w-4 text-emerald-300" />
-            Paste the code back into the store to claim your coins.
+            The code has been generated and linked to your session. Paste it back into the store to claim your coins.
           </p>
         )}
 
         <p className="mt-3 text-sm text-slate-300">
-          سيتم تحويلك إلى الصفحة الرئيسية خلال 5 ثوانٍ، أو{" "}
+          سيتم تحويلك إلى الصفحة الرئيسية خلال 5 ثوانٍ بعد النسخ الناجح، أو{" "}
           <button
             type="button"
             onClick={() => router.push("/")}
