@@ -75,15 +75,40 @@ export async function POST(request: Request) {
       );
     }
 
-    const tokenRecord = await pb
-      .collection("access_tokens")
-      .getFirstListItem(`token = "${token}"`);
+    const userId = pb.authStore.model?.id;
 
-    if (!tokenRecord) {
-      return NextResponse.json(
-        { error: "Invalid or expired token" },
-        { status: 400 },
-      );
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let tokenRecord: {
+      id: string;
+      is_used?: boolean;
+      expires?: string | null;
+    };
+
+    try {
+      tokenRecord = await pb
+        .collection("access_tokens")
+        .getFirstListItem(`token = "${token}" && user_id = "${userId}"`) as {
+          id: string;
+          is_used?: boolean;
+          expires?: string | null;
+        };
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        (error as { status?: number }).status === 404
+      ) {
+        return NextResponse.json(
+          { error: "Invalid or expired token" },
+          { status: 403 },
+        );
+      }
+
+      throw error;
     }
 
     if (tokenRecord.is_used) {
@@ -108,7 +133,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ code });
-  } catch {
+  } catch (error) {
+    console.error("verify-token error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

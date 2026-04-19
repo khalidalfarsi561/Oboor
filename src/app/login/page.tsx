@@ -36,7 +36,8 @@ export default function LoginPage() {
       await pb.collection("users").authWithPassword(trimmedEmail, password);
       syncBrowserAuthCookie();
       router.replace("/");
-    } catch {
+    } catch (error) {
+      console.error("LoginPage handleSubmit error:", error);
       setErrorMessage("Invalid email or password.");
     } finally {
       setIsSubmitting(false);

@@ -13,10 +13,10 @@ function generateUsernameFromEmail(email: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  const fallback = `user-${Math.random().toString(36).slice(2, 8)}`;
-  const baseUsername = slug || fallback;
+  const baseUsername = (slug || "user").slice(0, 15);
+  const suffix = Math.random().toString(36).slice(2, 6);
 
-  return baseUsername.length >= 3 ? baseUsername.slice(0, 20) : fallback;
+  return `${baseUsername}-${suffix}`;
 }
 
 export default function RegisterPage() {
@@ -64,7 +64,8 @@ export default function RegisterPage() {
       await pb.collection("users").authWithPassword(trimmedEmail, password);
       syncBrowserAuthCookie();
       router.replace("/");
-    } catch {
+    } catch (error) {
+      console.error("RegisterPage handleSubmit error:", error);
       setErrorMessage("Could not create account. Try a different email.");
     } finally {
       setIsSubmitting(false);

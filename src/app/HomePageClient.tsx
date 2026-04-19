@@ -65,7 +65,8 @@ export default function HomePageClient() {
         }
 
         setCoinBalance(typeof user.coins === "number" ? user.coins : 0);
-      } catch {
+      } catch (error) {
+        console.error("HomePageClient loadCoinBalance error:", error);
         if (!isMounted) {
           return;
         }
@@ -125,7 +126,8 @@ export default function HomePageClient() {
       const text = await navigator.clipboard.readText();
       setCode(text.trim());
       setToast({ type: "success", message: "Code pasted from clipboard." });
-    } catch {
+    } catch (error) {
+      console.error("HomePageClient handlePaste error:", error);
       setToast({
         type: "error",
         message: "Clipboard access failed. Paste manually.",
@@ -187,7 +189,8 @@ export default function HomePageClient() {
         message:
           "message" in data ? data.message : "Code redeemed successfully.",
       });
-    } catch {
+    } catch (error) {
+      console.error("HomePageClient handleRedeem error:", error);
       setToast({
         type: "error",
         message: "Network error. Please try again.",

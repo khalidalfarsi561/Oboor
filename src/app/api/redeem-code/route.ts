@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { code?: string };
     const code = typeof body.code === "string" ? body.code.trim() : "";
 
-    if (code.length < 5) {
+    if (code.length !== 8) {
       return NextResponse.json(
         { error: "Invalid or already used code" },
         { status: 400 },
@@ -53,7 +53,8 @@ export async function POST(request: Request) {
       message: "Code redeemed successfully",
       coins: typeof updatedUser.coins === "number" ? updatedUser.coins : 0,
     });
-  } catch {
+  } catch (error) {
+    console.error("redeem-code error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

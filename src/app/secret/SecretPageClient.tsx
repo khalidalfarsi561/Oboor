@@ -51,7 +51,8 @@ export default function SecretPageClient() {
         }
 
         setRewardCode(data.code);
-      } catch {
+      } catch (error) {
+        console.error("SecretPageClient verifyToken error:", error);
         setError(true);
       } finally {
         setIsLoading(false);
@@ -67,7 +68,7 @@ export default function SecretPageClient() {
     };
   }, [token]);
 
-    async function handleCopyCode() {
+  async function handleCopyCode() {
     if (!rewardCode || isCopied) return;
 
     try {
@@ -76,9 +77,10 @@ export default function SecretPageClient() {
       setIsCopied(true);
 
       window.setTimeout(() => {
-        router.push("/");
+        router.push("/?copied=true");
       }, 5000);
-    } catch {
+    } catch (error) {
+      console.error("SecretPageClient handleCopyCode error:", error);
       setCopyError("Failed to copy the code. Please copy it manually.");
     }
   }
