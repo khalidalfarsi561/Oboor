@@ -7,3 +7,9 @@ if (!pbUrl) {
 }
 
 export const pb = new PocketBase(pbUrl);
+
+export function getSsrPb(req: Request) {
+  const ssrPb = new PocketBase(pbUrl);
+  ssrPb.authStore.loadFromCookie(req.headers.get("cookie") || "");
+  return ssrPb;
+}

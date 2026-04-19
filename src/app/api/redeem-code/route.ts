@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
-import { pb } from "../../../lib/pocketbase";
+import { getSsrPb } from "../../../lib/pocketbase";
 
 export async function POST(request: Request) {
   try {
-    const { code, userId } = (await request.json()) as {
+    const pb = getSsrPb(request);
+
+    if (!pb.authStore.isValid) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { code } = (await request.json()) as {
       code?: string;
-      userId?: string;
     };
 
-    if (!code || !userId || typeof code !== "string" || typeof userId !== "string") {
+    if (!code || typeof code !== "string") {
       return NextResponse.json(
         { error: "Invalid or already used code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,13 +27,19 @@ export async function POST(request: Request) {
     if (!rewardCode || rewardCode.is_used) {
       return NextResponse.json(
         { error: "Invalid or already used code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await pb.collection("reward_codes").update(rewardCode.id, {
       is_used: true,
     });
+
+    const userId = pb.authStore.model?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await pb.collection("users").getOne(userId);
 
@@ -43,10 +54,10 @@ export async function POST(request: Request) {
       message: "Code redeemed successfully",
       coins: newCoinBalance,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid or already used code" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
