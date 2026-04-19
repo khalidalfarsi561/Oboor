@@ -73,9 +73,26 @@ export async function POST(request: Request) {
 
     const code = await createUniqueRewardCode(pb);
 
-    await pb.collection("access_tokens").update(tokenRecord.id, {
-      is_used: true,
-    });
+    try {
+      await pb.collection("access_tokens").update(tokenRecord.id, {
+        is_used: true,
+      });
+    } catch {
+      try {
+        const createdCodeRecord = await pb
+          .collection("reward_codes")
+          .getFirstListItem(`code = "${code}"`);
+
+        await pb.collection("reward_codes").delete(createdCodeRecord.id);
+      } catch {
+        // Best effort rollback only.
+      }
+
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({ code });
   } catch {

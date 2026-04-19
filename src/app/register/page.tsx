@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { pb } from "../../lib/pocketbase";
+import { pb, syncBrowserAuthCookie } from "../../lib/pocketbase";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function RegisterPage() {
       });
 
       await pb.collection("users").authWithPassword(trimmedEmail, password);
-      document.cookie = pb.authStore.exportToCookie();
+      syncBrowserAuthCookie();
       router.replace("/");
     } catch {
       setErrorMessage("Could not create account. Try a different email.");

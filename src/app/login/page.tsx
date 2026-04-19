@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { pb } from "../../lib/pocketbase";
+import { pb, syncBrowserAuthCookie } from "../../lib/pocketbase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function LoginPage() {
 
     try {
       await pb.collection("users").authWithPassword(trimmedEmail, password);
-      document.cookie = pb.authStore.exportToCookie();
+      syncBrowserAuthCookie();
       router.replace("/");
     } catch {
       setErrorMessage("Invalid email or password.");
@@ -60,7 +60,10 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-slate-200">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-slate-200"
+            >
               Email
             </label>
             <input
@@ -75,7 +78,10 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-slate-200">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-slate-200"
+            >
               Password
             </label>
             <input
@@ -106,7 +112,10 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-slate-300">
           New here?{" "}
-          <Link href="/register" className="text-cyan-300 transition hover:text-cyan-200">
+          <Link
+            href="/register"
+            className="text-cyan-300 transition hover:text-cyan-200"
+          >
             Create an account
           </Link>
         </p>

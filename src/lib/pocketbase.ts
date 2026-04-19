@@ -8,6 +8,25 @@ if (!pbUrl) {
 
 export const pb = new PocketBase(pbUrl);
 
+export function syncBrowserAuthCookie() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.cookie = pb.authStore.exportToCookie({
+    httpOnly: false,
+    path: "/",
+  });
+}
+
+export function loadBrowserAuthCookie() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  pb.authStore.loadFromCookie(document.cookie);
+}
+
 export function createServerPb() {
   return new PocketBase(pbUrl);
 }
