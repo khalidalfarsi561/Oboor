@@ -13,26 +13,13 @@ type TransactionCallback<T> = (transactionPb: PocketBase) => Promise<T>;
 type TransactionCapablePocketBase = PocketBase & {
   createTransaction?: <T>(callback: TransactionCallback<T>) => Promise<T>;
   transaction?: <T>(callback: TransactionCallback<T>) => Promise<T>;
-  createBatch?: () => BatchServiceLike;
-};
-
-type BatchCollectionServiceLike = {
-  create: (body: unknown, options?: unknown) => void;
-  update: (id: string, body: unknown, options?: unknown) => void;
-  upsert: (body: unknown, options?: unknown) => void;
-  delete: (id: string, options?: unknown) => void;
-};
-
-type BatchServiceLike = {
-  collection: (name: string) => BatchCollectionServiceLike;
-  send: (options?: unknown) => Promise<unknown>;
 };
 
 function getAuthCookieOptions(isServer: boolean) {
   return {
     httpOnly: isServer,
     path: "/",
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
   };
 }
 
@@ -75,13 +62,6 @@ export async function runPocketBaseTransaction<T>(
   callback: TransactionCallback<T>,
 ): Promise<T> {
   const transactionClient = client as TransactionCapablePocketBase;
-
-  if (typeof transactionClient.createBatch === "function") {
-    const batch = transactionClient.createBatch();
-    const result = await callback(batch as unknown as PocketBase);
-    await batch.send();
-    return result;
-  }
 
   if (typeof transactionClient.createTransaction === "function") {
     return transactionClient.createTransaction(callback);

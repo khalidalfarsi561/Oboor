@@ -97,7 +97,10 @@ export default function SecretPageClient() {
       }, 5000);
     } catch (error) {
       console.error("SecretPageClient handleCopyCode error:", error);
-      setCopyError("Failed to copy the code. Please copy it manually.");
+      setIsCopied(false);
+      setCopyError(
+        "Copy failed. Please copy the code manually before leaving this page.",
+      );
     }
   }
 
@@ -150,7 +153,7 @@ export default function SecretPageClient() {
         </div>
 
         <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-6 sm:px-6 sm:py-8">
-          <p className="animate-fade-in-up break-all font-mono text-2xl font-bold tracking-[0.18em] text-white sm:text-3xl md:text-4xl lg:text-5xl">
+          <p className="select-all animate-fade-in-up break-all font-mono text-2xl font-bold tracking-[0.18em] text-white sm:text-3xl md:text-4xl lg:text-5xl">
             {rewardCode}
           </p>
         </div>
@@ -182,7 +185,8 @@ export default function SecretPageClient() {
         )}
 
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          سيتم تحويلك إلى الصفحة الرئيسية خلال 5 ثوانٍ بعد النسخ الناجح، أو{" "}
+          When copying succeeds, you will be redirected to the homepage in 5 seconds.
+          If copying fails, copy the code manually above and use the button below to return now.{" "}
           <button
             type="button"
             onClick={() => router.push("/")}
