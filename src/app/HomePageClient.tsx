@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Coins, Gift, LogOut, PackageOpen, Star, ClipboardPaste } from "lucide-react";
 import { pb } from "../lib/pocketbase";
 
 type RedeemResponse = { message: string; coins: number } | { error: string };
@@ -206,10 +207,11 @@ export default function HomePageClient() {
         <header className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-glow backdrop-blur">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-cyan-200/80">
+                <Star className="h-4 w-4" />
                 Neon Rewards Store
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">
+              </div>
+              <h1 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
                 Spend coins, unlock digital loot.
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-300">
@@ -219,7 +221,8 @@ export default function HomePageClient() {
 
             <div className="flex flex-col gap-3 sm:items-end">
               <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 py-4 text-right">
-                <p className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                  <Coins className="h-4 w-4" />
                   Coin Balance
                 </p>
                 <p className="mt-1 text-3xl font-bold text-white">{coinBalance}</p>
@@ -228,8 +231,9 @@ export default function HomePageClient() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="min-h-12 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-rose-400/40 hover:bg-rose-400/10"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-rose-400/40 hover:bg-rose-400/10"
               >
+                <LogOut className="h-4 w-4" />
                 Logout
               </button>
             </div>
@@ -241,7 +245,8 @@ export default function HomePageClient() {
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-glow">
             <div className="mb-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-violet-300/80">
+              <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-violet-300/80">
+                <Gift className="h-4 w-4" />
                 Code Redemption
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -262,8 +267,9 @@ export default function HomePageClient() {
                 <button
                   type="button"
                   onClick={handlePaste}
-                  className="min-h-14 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-cyan-400/50 hover:bg-cyan-400/10"
+                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-cyan-400/50 hover:bg-cyan-400/10"
                 >
+                  <ClipboardPaste className="h-4 w-4" />
                   Paste
                 </button>
               </div>
@@ -271,8 +277,9 @@ export default function HomePageClient() {
               <button
                 type="submit"
                 disabled={isRedeeming}
-                className="min-h-14 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               >
+                <PackageOpen className="h-4 w-4" />
                 {isRedeeming ? "Redeeming..." : "Redeem"}
               </button>
             </form>
@@ -280,7 +287,8 @@ export default function HomePageClient() {
 
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-glow">
             <div className="mb-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80">
+              <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-emerald-300/80">
+                <Star className="h-4 w-4" />
                 Store / Products
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -296,19 +304,25 @@ export default function HomePageClient() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-white">{product.name}</h3>
+                      <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                        <PackageOpen className="h-4 w-4" />
+                        Reward
+                      </div>
+                      <h3 className="mt-3 text-lg font-semibold text-white">{product.name}</h3>
                       <p className="mt-1 text-sm text-slate-300">{product.description}</p>
                     </div>
-                    <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm font-medium text-amber-200">
-                      Price: {product.price} Coins
+                    <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm font-medium text-amber-200">
+                      <Coins className="h-4 w-4" />
+                      {product.price} Coins
                     </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => handleBuy(product)}
-                    className="mt-4 inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-violet-400/40 hover:bg-violet-400/10"
+                    className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-violet-400/40 hover:bg-violet-400/10"
                   >
+                    <Star className="h-4 w-4" />
                     Buy
                   </button>
                 </article>

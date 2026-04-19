@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { BadgeCheck, Copy, ShieldAlert, Sparkles } from "lucide-react";
 
 function Spinner() {
   return (
@@ -65,7 +66,7 @@ export default function SecretPageClient() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center px-4 text-slate-100">
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-slate-950/80 px-8 py-10 shadow-glow backdrop-blur">
           <Spinner />
           <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80">
@@ -80,20 +81,25 @@ export default function SecretPageClient() {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="max-w-md rounded-3xl border border-rose-500/30 bg-rose-500/10 px-8 py-10 text-center shadow-glow">
-          <h1 className="text-2xl font-semibold text-rose-100">
+          <ShieldAlert className="mx-auto h-12 w-12 text-rose-200" />
+          <h1 className="mt-4 text-2xl font-semibold text-rose-100">
             Unauthorized or Expired Link
           </h1>
+          <p className="mt-2 text-sm text-rose-100/80">
+            The reward access link is invalid or has expired.
+          </p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8 text-slate-100">
       <section className="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/80 p-8 text-center shadow-glow backdrop-blur">
-        <p className="text-xs uppercase tracking-[0.35em] text-violet-300/80">
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-cyan-200/80">
+          <Sparkles className="h-4 w-4" />
           Reward Code Generated
-        </p>
+        </div>
 
         <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 px-6 py-8">
           <p className="break-all font-mono text-4xl font-bold tracking-[0.25em] text-white sm:text-5xl">
@@ -104,10 +110,16 @@ export default function SecretPageClient() {
         <button
           type="button"
           onClick={handleCopyCode}
-          className="mt-6 min-h-14 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white transition hover:brightness-110"
+          className="mt-6 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-semibold text-white transition hover:brightness-110"
         >
+          <Copy className="h-4 w-4" />
           Copy Code
         </button>
+
+        <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-300">
+          <BadgeCheck className="h-4 w-4 text-emerald-300" />
+          Paste the code back into the store to claim your coins.
+        </p>
       </section>
     </main>
   );

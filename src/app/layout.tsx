@@ -15,8 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <AuthGate>{children}</AuthGate>
+      <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
+        <main className="min-h-screen bg-slate-950">
+          <AuthGate>{children}</AuthGate>
+        </main>
       </body>
     </html>
   );
