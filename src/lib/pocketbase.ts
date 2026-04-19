@@ -8,8 +8,18 @@ if (!pbUrl) {
 
 export const pb = new PocketBase(pbUrl);
 
+export function createServerPb() {
+  return new PocketBase(pbUrl);
+}
+
 export function getSsrPb(req: Request) {
-  const ssrPb = new PocketBase(pbUrl);
+  const ssrPb = createServerPb();
   ssrPb.authStore.loadFromCookie(req.headers.get("cookie") || "");
+  return ssrPb;
+}
+
+export function getSsrPbFromCookieHeader(cookieHeader: string) {
+  const ssrPb = createServerPb();
+  ssrPb.authStore.loadFromCookie(cookieHeader);
   return ssrPb;
 }

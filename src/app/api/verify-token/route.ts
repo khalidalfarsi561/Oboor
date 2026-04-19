@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pb } from "../../../lib/pocketbase";
+import { createServerPb } from "../../../lib/pocketbase";
 
 function generateRewardCode(length = 8): string {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -13,6 +13,31 @@ function generateRewardCode(length = 8): string {
   return result;
 }
 
+function isUniqueConstraintError(error: unknown) {
+  return typeof error === "object" && error !== null && "status" in error && (error as { status?: number }).status === 400;
+}
+
+async function createUniqueRewardCode(pb: ReturnType<typeof createServerPb>) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = generateRewardCode(8);
+
+    try {
+      await pb.collection("reward_codes").create({
+        code,
+        is_used: false,
+      });
+
+      return code;
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Unable to generate a unique reward code");
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { token?: string };
@@ -24,6 +49,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    const pb = createServerPb();
 
     let tokenRecord;
     try {
@@ -44,15 +71,10 @@ export async function POST(request: Request) {
       );
     }
 
+    const code = await createUniqueRewardCode(pb);
+
     await pb.collection("access_tokens").update(tokenRecord.id, {
       is_used: true,
-    });
-
-    const code = generateRewardCode(8);
-
-    await pb.collection("reward_codes").create({
-      code,
-      is_used: false,
     });
 
     return NextResponse.json({ code });

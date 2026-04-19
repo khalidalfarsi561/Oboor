@@ -1,7 +1,18 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import HomePageClient from "./HomePageClient";
+import { getSsrPbFromCookieHeader } from "../lib/pocketbase";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const pb = getSsrPbFromCookieHeader(cookieHeader);
+
+  if (!pb.authStore.isValid) {
+    redirect("/login");
+  }
+
   return (
     <Suspense
       fallback={

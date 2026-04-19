@@ -18,6 +18,7 @@ export default function SecretPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [rewardCode, setRewardCode] = useState("");
+  const [copyError, setCopyError] = useState("");
 
   useEffect(() => {
     async function verifyToken() {
@@ -57,11 +58,16 @@ export default function SecretPageClient() {
     verifyToken();
   }, [token]);
 
-  function handleCopyCode() {
+  async function handleCopyCode() {
     if (!rewardCode) return;
 
-    void navigator.clipboard.writeText(rewardCode);
-    router.push("/?copied=true");
+    try {
+      await navigator.clipboard.writeText(rewardCode);
+      setCopyError("");
+      router.push("/?copied=true");
+    } catch {
+      setCopyError("Failed to copy the code. Please copy it manually.");
+    }
   }
 
   if (isLoading) {
@@ -116,10 +122,16 @@ export default function SecretPageClient() {
           Copy Code
         </button>
 
-        <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-300">
-          <BadgeCheck className="h-4 w-4 text-emerald-300" />
-          Paste the code back into the store to claim your coins.
-        </p>
+        {copyError ? (
+          <p className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {copyError}
+          </p>
+        ) : (
+          <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-300">
+            <BadgeCheck className="h-4 w-4 text-emerald-300" />
+            Paste the code back into the store to claim your coins.
+          </p>
+        )}
       </section>
     </main>
   );

@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Coins, Gift, LogOut, PackageOpen, Star, ClipboardPaste } from "lucide-react";
+import {
+  Coins,
+  Gift,
+  LogOut,
+  PackageOpen,
+  Star,
+  ClipboardPaste,
+} from "lucide-react";
 import { pb } from "../lib/pocketbase";
 import { products, type Product } from "../lib/products";
 
@@ -137,7 +144,10 @@ export default function HomePageClient() {
     }
 
     if (!pb.authStore.isValid) {
-      setToast({ type: "error", message: "Session unavailable for redemption." });
+      setToast({
+        type: "error",
+        message: "Session unavailable for redemption.",
+      });
       router.replace("/login");
       return;
     }
@@ -159,7 +169,8 @@ export default function HomePageClient() {
       const data = (await response.json()) as RedeemResponse;
 
       if (!response.ok) {
-        const errorMessage = "error" in data ? data.error : "Failed to redeem code.";
+        const errorMessage =
+          "error" in data ? data.error : "Failed to redeem code.";
         setToast({ type: "error", message: errorMessage });
         if (response.status === 401) {
           router.replace("/login");
@@ -188,18 +199,9 @@ export default function HomePageClient() {
   }
 
   function handleBuy(product: Product) {
-    if (coinBalance >= product.price) {
-      setCoinBalance((current) => current - product.price);
-      setToast({
-        type: "success",
-        message: `Purchased ${product.name}!`,
-      });
-      return;
-    }
-
     setToast({
       type: "error",
-      message: "Not enough coins.",
+      message: `${product.name} is shown for demo purposes only.`,
     });
   }
 
@@ -229,7 +231,8 @@ export default function HomePageClient() {
                 Spend coins, unlock digital loot.
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-300">
-                {sessionLabel} · Redeem reward codes, track your balance, and browse the mock store.
+                {sessionLabel} · Redeem reward codes, track your balance, and
+                browse the mock store.
               </p>
             </div>
 
@@ -239,7 +242,9 @@ export default function HomePageClient() {
                   <Coins className="h-4 w-4" />
                   Coin Balance
                 </p>
-                <p className="mt-1 text-3xl font-bold text-white">{coinBalance}</p>
+                <p className="mt-1 text-3xl font-bold text-white">
+                  {coinBalance}
+                </p>
               </div>
 
               <button
@@ -254,7 +259,9 @@ export default function HomePageClient() {
           </div>
         </header>
 
-        {toast ? <div className={toastClass(toast.type)}>{toast.message}</div> : null}
+        {toast ? (
+          <div className={toastClass(toast.type)}>{toast.message}</div>
+        ) : null}
 
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-glow">
@@ -322,8 +329,12 @@ export default function HomePageClient() {
                         <PackageOpen className="h-4 w-4" />
                         Reward
                       </div>
-                      <h3 className="mt-3 text-lg font-semibold text-white">{product.name}</h3>
-                      <p className="mt-1 text-sm text-slate-300">{product.description}</p>
+                      <h3 className="mt-3 text-lg font-semibold text-white">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {product.description}
+                      </p>
                     </div>
                     <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm font-medium text-amber-200">
                       <Coins className="h-4 w-4" />
@@ -334,10 +345,10 @@ export default function HomePageClient() {
                   <button
                     type="button"
                     onClick={() => handleBuy(product)}
-                    className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition hover:border-violet-400/40 hover:bg-violet-400/10"
+                    className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white opacity-70 transition hover:border-violet-400/40 hover:bg-violet-400/10"
                   >
                     <Star className="h-4 w-4" />
-                    Buy
+                    Demo Only
                   </button>
                 </article>
               ))}
