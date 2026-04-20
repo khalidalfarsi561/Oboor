@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import AuthGate from "../components/AuthGate";
+import PageTransition from "../components/PageTransition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
         <main className="min-h-screen bg-slate-950">
-          <AuthGate>{children}</AuthGate>
+          <AuthGate>
+            <PageTransition>{children}</PageTransition>
+          </AuthGate>
         </main>
       </body>
     </html>

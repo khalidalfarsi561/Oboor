@@ -14,6 +14,8 @@ import {
   Star,
 } from "lucide-react";
 import { pb } from "../lib/pocketbase";
+import EmptyState from "../components/EmptyState";
+import useSound from "../hooks/useSound";
 import { products, type Product } from "../lib/products";
 
 type RedeemResponse =
@@ -48,6 +50,7 @@ export default function HomePageClient() {
     message: string;
   } | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const playSuccessSound = useSound();
 
   useEffect(() => {
     if (!pb.authStore.isValid) {
@@ -178,6 +181,8 @@ export default function HomePageClient() {
         setCoinBalance(data.coins);
       }
 
+      void playSuccessSound();
+
       setCode("");
       setToast({
         type: "success",
@@ -200,6 +205,8 @@ export default function HomePageClient() {
       message: `${product.name} is a preview item for now. More rewards are coming soon.`,
     });
   }
+
+  const hasProducts = products.length > 0;
 
   return (
     <main className="min-h-screen px-4 py-4 text-slate-100 sm:px-6 sm:py-6 lg:px-8">
@@ -233,7 +240,7 @@ export default function HomePageClient() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white smooth-transition hover:border-rose-400/40 hover:bg-rose-400/10"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition-all duration-200 hover:border-rose-400/40 hover:bg-rose-400/10 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] active:scale-95"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -346,7 +353,7 @@ export default function HomePageClient() {
                 <button
                   type="submit"
                   disabled={isRedeeming}
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white smooth-transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <ArrowRight className="h-4 w-4" />
                   {isRedeeming ? "Redeeming..." : "Redeem"}
@@ -368,42 +375,59 @@ export default function HomePageClient() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-1">
-                {products.map((product) => (
-                  <article
-                    key={product.id}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-glow smooth-transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.07] hover:shadow-cyan-500/10"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200/80">
-                          <PackageOpen className="h-4 w-4" />
-                          Preview item
+              {hasProducts ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-1">
+                  {products.map((product) => (
+                    <article
+                      key={product.id}
+                      className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-glow transition-all duration-200 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.07] hover:shadow-cyan-500/10"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                            <PackageOpen className="h-4 w-4" />
+                            Preview item
+                          </div>
+                          <h3 className="mt-3 text-lg font-semibold text-white">
+                            {product.name}
+                          </h3>
+                          <p className="mt-1 text-sm leading-6 text-slate-300">
+                            {product.description}
+                          </p>
                         </div>
-                        <h3 className="mt-3 text-lg font-semibold text-white">
-                          {product.name}
-                        </h3>
-                        <p className="mt-1 text-sm leading-6 text-slate-300">
-                          {product.description}
-                        </p>
+                        <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm font-medium text-amber-200">
+                          <Coins className="h-4 w-4" />
+                          {product.price} Coins
+                        </span>
                       </div>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm font-medium text-amber-200">
-                        <Coins className="h-4 w-4" />
-                        {product.price} Coins
-                      </span>
-                    </div>
 
+                      <button
+                        type="button"
+                        onClick={() => handleBuy(product)}
+                        className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white transition-all duration-200 hover:border-violet-400/40 hover:bg-violet-400/10 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] active:scale-95"
+                      >
+                        <Star className="h-4 w-4" />
+                        Preview only
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No preview items yet"
+                  description="The store is still warming up. New preview rewards will appear here as soon as the catalog is populated."
+                  action={
                     <button
                       type="button"
-                      onClick={() => handleBuy(product)}
-                      className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 font-medium text-white smooth-transition hover:border-violet-400/40 hover:bg-violet-400/10"
+                      onClick={() => router.push("/secret")}
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] active:scale-95"
                     >
-                      <Star className="h-4 w-4" />
-                      Preview only
+                      <Sparkles className="h-4 w-4" />
+                      Check reward links
                     </button>
-                  </article>
-                ))}
-              </div>
+                  }
+                />
+              )}
             </article>
           </div>
         </section>
